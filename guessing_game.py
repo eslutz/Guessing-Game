@@ -10,7 +10,6 @@ class Guess(Enum):
     LOW = -1
     WIN = 0
     HIGH = 1
-    GIVE_UP = 9
 
 
 def display_menu():
@@ -59,8 +58,6 @@ def take_a_guess(number_to_guess,
                  highest_guess=0,
                  machine_playing=False):
     """You or the machine guesses the number was picked."""
-    # Variable for determining wining condition to end the game.
-    did_i_win = Guess.LOW
     # Loop until the correct number is guessed or the user give up.
     while True:
         if machine_playing:
@@ -71,12 +68,13 @@ def take_a_guess(number_to_guess,
             print(f"\nTake a guess => {guess}")
         else:
             # Get the players guess.
+            guess = input("\nTake a guess => ").lower()
+            # Checks and returns true if the user wants to stop guessing.
+            if guess in ("q", "quit"):
+                print("Well, I guess you're giving up...")
+                return True
             try:
-                guess = input("\nTake a guess => ").lower()
-                if guess in ("q", "quit"):
-                    did_i_win = Guess.GIVE_UP
-                else:
-                    guess = int(guess)
+                guess = int(guess)
             except ValueError:
                 print("\nYou must enter a number. Try again.")
                 continue
@@ -85,21 +83,17 @@ def take_a_guess(number_to_guess,
                 if guess in previous_guesses["previous"]:
                     print("You guessed this already, but ok.")
                     previous_guesses["same"].append(guess)
-        # Checks if the user gave up.
-        if did_i_win == Guess.GIVE_UP:
-            print("Well, I guess you're giving up...")
-            return True
-        else:
-            # Checks if the guess is too high or low or correct.
-            did_i_win = compare_answer(number_to_guess, guess)
+        # Checks if the guess is too high or low or correct.
+        did_i_win = compare_answer(number_to_guess, guess)
         # Adds the guess to list of previous guessed.
         previous_guesses["previous"].append(guess)
         # The number was guessed.
         if did_i_win.value == 0:
             print(f"WINNER!!! Congrats on winning! The winning number was {guess}.")
+            # Return false as the number was guessed without giving up.
             return False
         # The number was too low.  Sets the guess as the new low value for next guess.
-        elif did_i_win.value == -1:
+        if did_i_win.value == -1:
             print("WRONG!!! Guess higher!")
             lowest_guess = guess
         # The number was too high.  Sets the guess as the new high value for next guess.
@@ -118,7 +112,8 @@ def display_game_stats(previous_guesses, give_up):
     else:
         end_phrase = "to guess the correct number!"
     print(f"\nIt took {len(previous_guesses['previous'])} guess(es) {end_phrase}")
-    print(f"There were {len(set(previous_guesses['same']))} number(s) that were guessed more than once.")
+    print(f"There were {len(set(previous_guesses['same']))}"
+          f" number(s) that were guessed more than once.")
     if len(previous_guesses['same']) > 0:
         print("\nThese are the number(s) that were guessed more than once:")
         print(*set(previous_guesses['same']), sep=", ")
@@ -126,16 +121,16 @@ def display_game_stats(previous_guesses, give_up):
 
 def main():
     """Main function with the loop, function calls, and game flow logic."""
-    # Constants for storing the smallest and biggest possible number.
-    max_integer = sys.maxsize
-    min_integer = -sys.maxsize
-
     # Dictionary with empty lists for storing previous guesses and numbers guessed more than once.
     previous_guesses = {"previous": [],
                         "same": []}
-
     # Loops until the player quits.
     while True:
+        # Set range variables for storing the smallest and biggest possible number.
+        max_integer = sys.maxsize
+        min_integer = -sys.maxsize
+        # Set starting value for give_up.
+        give_up = False
         # Display menu and get desired game mode from player.
         menu_choice = display_menu()
         # Start specified game mode based on input.
@@ -157,10 +152,10 @@ def main():
                     continue
                 else:
                     give_up = take_a_guess(player_number_to_guess,
-                                 previous_guesses,
-                                 min_integer,
-                                 max_integer,
-                                 True)
+                                           previous_guesses,
+                                           min_integer,
+                                           max_integer,
+                                           True)
                     break
         elif menu_choice == "3":
             machine_number_to_guess = machine_pick_a_number(previous_guesses,
@@ -168,10 +163,10 @@ def main():
                                                             max_integer)
             print(f"\nI have chosen a number between {min_integer} & {max_integer}!")
             give_up = take_a_guess(machine_number_to_guess,
-                         previous_guesses,
-                         min_integer,
-                         max_integer,
-                         True)
+                                   previous_guesses,
+                                   min_integer,
+                                   max_integer,
+                                   True)
         elif menu_choice in ("4", "q", "quit"):
             print("\nThanks for playing.  Goodbye!")
             break
