@@ -27,6 +27,28 @@ def display_menu():
     return game_mode.lower()
 
 
+def go_easy_on_me():
+    """Displays menu to get difficulty level from the user."""
+    while True:
+        print("\nDo you want to play like a machine or do you need it easy, like a human?")
+        print('-' * 36)
+        print("1) Play like a Machine!  (large number range)")
+        print("2) Go easy on me :(      (small number range)")
+        print('-' * 36)
+        try:
+            difficulty_level = int(input("=> "))
+            if difficulty_level <= 0 or difficulty_level > 2:
+                raise ValueError()
+        except ValueError:
+            print("\nYou must enter a number. Try again.")
+            continue
+        # If user wants it easy, return true to play with smaller number range.
+        if difficulty_level == 2:
+            return True
+        # Return false to play with same number range as the machine.
+        return False
+
+
 def machine_pick_a_number(previous_guesses,
                           lowest_guess,
                           highest_guess):
@@ -135,6 +157,12 @@ def main():
         menu_choice = display_menu()
         # Start specified game mode based on input.
         if menu_choice == "1":
+            # Gets if user wants a smaller number range to guess from.
+            easy_mode = go_easy_on_me()
+            # Set range variables to a smaller range.
+            if easy_mode:
+                max_integer = 100
+                min_integer = -100
             machine_number_to_guess = machine_pick_a_number(previous_guesses,
                                                             min_integer,
                                                             max_integer)
@@ -173,7 +201,6 @@ def main():
         else:
             print("\nInvalid menu option.  Try again.\n")
             continue
-
         display_game_stats(previous_guesses, give_up)
 
 
